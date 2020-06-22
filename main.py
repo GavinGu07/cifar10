@@ -99,10 +99,18 @@ def main():
                         help='input batch size for training per executor(default: 128)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing per executor(default: 1000)')
-    parser.add_argument('--epochs', type=int, default=20, metavar='N',
-                        help='number of epochs to train (default: 20)')
-    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
-                        help='learning rate (default: 0.001)')
+    parser.add_argument('--epochs', type=int, default=135, metavar='N',
+                        help='number of epochs to train (default: 135)')
+    parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
+                        help='learning rate (default: 0.01)')
+    parser.add_argument('--lrd', type=float, default=0.0, metavar='LRD',
+                        help='learning rate decay(default: 0.0)')
+    parser.add_argument('--wd', type=float, default=5e-4, metavar='WD',
+                        help='weight decay(default: 5e-4)')
+    parser.add_argument('--momentum', type=float, default=0.9, metavar='momentum',
+                        help='momentum (default: 0.9)')
+    parser.add_argument('--dampening', type=float, default=0.0, metavar='dampening',
+                        help='dampening (default: 0.0)')
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
     parser.add_argument('--save-model', action='store_true', default=False,
@@ -152,10 +160,10 @@ def main():
     model.train()
     criterion = nn.CrossEntropyLoss()
 
-    adam = Adam(args.lr)
+    optimizer = SGD(args.lr, args.lrd, args.wd, args.momentum, args.dampening)
     zoo_model = TorchModel.from_pytorch(model)
     zoo_criterion = TorchLoss.from_pytorch(criterion)
-    zoo_estimator = Estimator(zoo_model, optim_methods=adam)
+    zoo_estimator = Estimator(zoo_model, optim_methods=optimizer)
     train_featureset = FeatureSet.pytorch_dataloader(train_loader)
     test_featureset = FeatureSet.pytorch_dataloader(test_loader)
     from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
